@@ -69,7 +69,7 @@ public final class RcLogger {
     builder.append(level);
     builder.append("]");
     builder.append("[");
-    builder.append(Thread.currentThread().getName());
+    builder.append(String.format("%010d", Thread.currentThread().getId()));
     builder.append("]");
     builder.append(message.toString());
     if (message instanceof Throwable) {
