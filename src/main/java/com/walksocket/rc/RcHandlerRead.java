@@ -122,7 +122,9 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
     RcCloseReason reason = attachmentRead.getReason();
 
     // force close
-    reason = new RcCloseReason(RcCloseReason.Code.FAILED);
+    if (reason == null || reason.getCode() == RcCloseReason.Code.NONE) {
+      reason = new RcCloseReason(RcCloseReason.Code.FAILED);
+    }
     RcSession session = RcSessionManager.by(channel);
     if (session != null) {
       synchronized (session) {

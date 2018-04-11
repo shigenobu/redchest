@@ -31,7 +31,7 @@ public final class RcLogger {
    * @param message
    */
   static void error(Object message) {
-    out("ERROR", message);
+    out("E", message);
   }
 
   /**
@@ -39,7 +39,7 @@ public final class RcLogger {
    * @param message logging message
    */
   static void info(Object message) {
-    out("INFO", message);
+    out("I", message);
   }
 
   /**
@@ -50,7 +50,7 @@ public final class RcLogger {
     if (!verbose) {
       return;
     }
-    out("DEBUG", message.get());
+    out("D", message.get());
   }
 
   /**
@@ -64,7 +64,7 @@ public final class RcLogger {
     builder.append(RcDate.now());
     builder.append("]");
     builder.append("[");
-    builder.append("REDCHEST");
+    builder.append("RC");
     builder.append("-");
     builder.append(level);
     builder.append("]");

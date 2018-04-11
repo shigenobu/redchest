@@ -27,7 +27,7 @@ public class RcDate {
    * set add milli seconds.
    * <pre>
    *   if you want to set locale JP,
-   *   call this method with 32400000
+   *   call this method with 32400000(60 * 60 * 9 * 1000)
    * </pre>
    * @param addMilliSeconds milliseconds
    */
