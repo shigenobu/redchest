@@ -44,7 +44,7 @@ public class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentCon
     AsynchronousSocketChannel channel = attachmentConnect.getChannel();
 
     // callback
-    RcSession session = RcSessionManager.generate(channel, new RcSession(channel));
+    RcSession session = RcSessionManager.generate(channel, new RcSession(channel, RcSession.OWner.CLIENT));
     if (session != null) {
       synchronized (session) {
         session.updateTimeout();

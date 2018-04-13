@@ -10,7 +10,6 @@ public class RcCloseReason {
 
   /**
    * close reason code enum.
-   * @author shigenobu
    *
    */
   public enum Code {

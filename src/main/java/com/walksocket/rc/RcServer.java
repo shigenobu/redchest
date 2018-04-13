@@ -141,7 +141,7 @@ public class RcServer {
       }
 
       // start service
-      RcSessionManager.startServiceTimeout();
+      RcSessionManager.startServiceTimeout(RcSession.Owner.SERVER);
 
       // start server
       handler = new RcHandlerAccept(callback, readBufferSize);

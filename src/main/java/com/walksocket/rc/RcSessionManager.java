@@ -75,8 +75,9 @@ public class RcSessionManager {
 
   /**
    * start service timeout.
+   * @param owner client or server
    */
-  static void startServiceTimeout() {
+  static void startServiceTimeout(RcSession.Owner owner) {
     serviceTimeout.scheduleAtFixedRate(
         new Runnable() {
 
@@ -93,7 +94,7 @@ public class RcSessionManager {
                 Map.Entry<AsynchronousSocketChannel, RcSession> element = iterator.next();
                 AsynchronousSocketChannel channel = element.getKey();
                 RcSession session = element.getValue();
-                if (session.isTimeout()) {
+                if (session.isTimeout() && session.getOwner() == owner) {
                   RcAttachmentRead attachmentRead
                       = new RcAttachmentRead(
                           channel,

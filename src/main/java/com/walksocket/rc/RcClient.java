@@ -74,7 +74,7 @@ public class RcClient {
       channel = AsynchronousSocketChannel.open();
 
       // start service
-      RcSessionManager.startServiceTimeout();
+      RcSessionManager.startServiceTimeout(RcSession.Owner.CLIENT);
 
       // connect
       handler = new RcHandlerConnect(callback, readBufferSize);

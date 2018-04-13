@@ -41,7 +41,7 @@ public class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChan
   @Override
   public void completed(AsynchronousSocketChannel channel, RcAttachmentAccept attachmentAccept) {
     // callback
-    RcSession session = RcSessionManager.generate(channel, new RcSession(channel));
+    RcSession session = RcSessionManager.generate(channel, new RcSession(channel, RcSession.Owner.SERVER));
     if (session != null) {
       synchronized (session) {
         session.updateTimeout();

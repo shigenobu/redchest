@@ -20,6 +20,14 @@ import java.util.concurrent.TimeoutException;
 public class RcSession {
 
   /**
+   * owner
+   */
+  enum Owner {
+    SEVEAR,
+    CLIENT,
+  };
+
+  /**
    * default send timeout milliseconds.
    */
   private static final int DEFAULT_TIMEOUT_MILLISECONDS = 1500;
@@ -45,6 +53,11 @@ public class RcSession {
   private AsynchronousSocketChannel channel;
 
   /**
+   * owner.
+   */
+  private Owner owner;
+
+  /**
    * close handler called.
    */
   private boolean closeHandlerCalled = false;
@@ -67,10 +80,12 @@ public class RcSession {
   /**
    * constructor.
    * @param channel async socket channel
+   * @param owner server or client
    */
-  RcSession(AsynchronousSocketChannel channel) {
+  RcSession(AsynchronousSocketChannel channel, Owner owner) {
     this.sid = UUID.randomUUID().toString();
     this.channel = channel;
+    this.owner = owner;
     this.localAddress = orNull(channel::getLocalAddress);
     this.remoteAddress = orNull(channel::getRemoteAddress);
   }
@@ -88,6 +103,10 @@ public class RcSession {
       RcLogger.debug(() -> e);
     }
     return null;
+  }
+
+  Owner getOwner() {
+    return owner;
   }
 
   /**
