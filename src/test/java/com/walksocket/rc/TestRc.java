@@ -16,7 +16,7 @@ public class TestRc {
     RcServer server = new RcServer(new SeverCallback());
     server.start();
 
-    int size = 10;
+    int size = 5;
     List<RcClient> clients = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       clients.add(new RcClient(new ClientCallback(), "127.0.0.1", 8710));
@@ -24,7 +24,7 @@ public class TestRc {
     }
 
     try {
-      Thread.sleep(30000);
+      Thread.sleep(3000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -40,7 +40,7 @@ public class TestRc {
     @Override
     public void onOpen(RcSession session) {
       RcLogger.debug(() -> String.format("server onOpen:%s %s", session.getRemoteAddress(), session));
-      session.setIdleMilliSeconds(3000);
+//      session.setIdleMilliSeconds(3000);
 
       byte[] message = "hello".getBytes(StandardCharsets.UTF_8);
       try {
@@ -86,11 +86,11 @@ public class TestRc {
         byte[] msg = ("hi server " + cnt).getBytes(StandardCharsets.UTF_8);
         try {
           session.send(msg);
-          try {
-            Thread.sleep(4000);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+//          try {
+//            Thread.sleep(4000);
+//          } catch (InterruptedException e) {
+//            e.printStackTrace();
+//          }
         } catch (RcSession.RcSendException e) {
           e.printStackTrace();
         }

@@ -95,6 +95,8 @@ class RcSessionManager {
    * start service timeout.
    */
   void startServiceTimeout() {
+    int start = 1000 / devide;
+    int offset = 1000 / devide;
     serviceTimeout.scheduleAtFixedRate(
         new Runnable() {
 
@@ -123,7 +125,7 @@ class RcSessionManager {
               sessionLocks.get(no).unlock();
             }
           }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, start, offset, TimeUnit.MILLISECONDS);
   }
 
   /**
