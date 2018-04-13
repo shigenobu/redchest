@@ -19,7 +19,6 @@ dependencies {
 }
 
 apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
 
 jacocoTestReport {
     reports {
@@ -28,3 +27,19 @@ jacocoTestReport {
         html.enabled true
     }
 }
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
+    }
+}
+
+apply plugin: 'com.github.kt3k.coveralls'
+
+coveralls {
+    sourceDirs = files(sourceSets.main.allSource.srcDirs).files.absolutePath
+}
+
