@@ -1,5 +1,6 @@
 group 'com.walksocket'
 version '0.0.1'
+description 'Java NIO2 Tcp wrapper for server & client.'
 
 apply plugin: 'java'
 
@@ -47,3 +48,75 @@ javadoc {
     options.memberLevel = JavadocMemberLevel.PUBLIC
 }
 
+apply plugin: "maven"
+apply plugin: "signing"
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+compileJava {
+    options.compilerArgs += ['-profile', 'compact1']
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    required { hasProperty("signing.keyId") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            def sonatypeUsername = project.hasProperty("sonatypeUsername") ? project.property("sonatypeUsername") : ""
+            def sonatypePassword = project.hasProperty("sonatypePassword") ? project.property("sonatypePassword") : ""
+
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'redchest'
+                packaging 'jar'
+                description 'Java NIO2 Tcp wrapper for server & client.'
+                url 'https://github.com/shigenobu/redchest'
+
+                scm {
+                    connection 'scm:git:https://github.com/shigenobu/redchest.git'
+                    developerConnection 'scm:git:https://github.com/shigenobu/redchest.git'
+                    url 'https://github.com/shigenobu/redchest'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'PON'
+                        name 'Shigenobu Furuta'
+                        email 'shigenobu@walksocket.com'
+                    }
+                }
+            }
+        }
+    }
+}
