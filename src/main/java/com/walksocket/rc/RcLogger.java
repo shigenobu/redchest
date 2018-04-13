@@ -46,6 +46,17 @@ public final class RcLogger {
    * logging debug level.
    * @param message logging message
    */
+  static void debug(Object message) {
+    if (!verbose) {
+      return;
+    }
+    out("D", message);
+  }
+
+  /**
+   * logging debug level.
+   * @param message logging message with lambda
+   */
   static void debug(Supplier<Object> message) {
     if (!verbose) {
       return;

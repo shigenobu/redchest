@@ -3,6 +3,8 @@ package com.walksocket.rc;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRc {
 
@@ -14,16 +16,22 @@ public class TestRc {
     RcServer server = new RcServer(new SeverCallback());
     server.start();
 
-    RcClient client = new RcClient(new ClientCallback(), "127.0.0.1", 8710);
-    client.connect();
+    int size = 10;
+    List<RcClient> clients = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      clients.add(new RcClient(new ClientCallback(), "127.0.0.1", 8710));
+      clients.get(i).connect();
+    }
 
     try {
-      Thread.sleep(10000);
+      Thread.sleep(30000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    client.disconnect();
+    for (int i = 0; i < clients.size(); i++) {
+      clients.get(i).disconnect();
+    }
     server.shutdown();
   }
 
@@ -31,7 +39,8 @@ public class TestRc {
 
     @Override
     public void onOpen(RcSession session) {
-      RcLogger.debug(() -> String.format("server onOpen:%s", session));
+      RcLogger.debug(() -> String.format("server onOpen:%s %s", session.getRemoteAddress(), session));
+      session.setIdleMilliSeconds(3000);
 
       byte[] message = "hello".getBytes(StandardCharsets.UTF_8);
       try {
@@ -55,7 +64,7 @@ public class TestRc {
 
     @Override
     public void onClose(RcSession session, RcCloseReason reason) {
-      RcLogger.debug(() -> String.format("server onClose:%s %s", session, reason));
+      RcLogger.debug(() -> String.format("server onClose:%s %s %s", session.getRemoteAddress(), session, reason));
     }
   }
 
@@ -63,7 +72,7 @@ public class TestRc {
 
     @Override
     public void onOpen(RcSession session) {
-      RcLogger.debug(() -> String.format("cleint onOpen:%s", session));
+      RcLogger.debug(() -> String.format("cleint onOpen:%s %s", session.getLocalAddress(), session));
 
       session.setValue("cnt", 0);
     }
@@ -77,6 +86,11 @@ public class TestRc {
         byte[] msg = ("hi server " + cnt).getBytes(StandardCharsets.UTF_8);
         try {
           session.send(msg);
+          try {
+            Thread.sleep(4000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
         } catch (RcSession.RcSendException e) {
           e.printStackTrace();
         }
@@ -88,7 +102,7 @@ public class TestRc {
 
     @Override
     public void onClose(RcSession session, RcCloseReason reason) {
-      RcLogger.debug(() -> String.format("client onClose:%s %s", session, reason));
+      RcLogger.debug(() -> String.format("client onClose:%s %s %s", session.getLocalAddress(), session, reason));
     }
   }
 }

@@ -43,6 +43,11 @@ public class RcClient {
   private RcHandlerConnect handler;
 
   /**
+   * session manager.
+   */
+  private RcSessionManager manager;
+
+  /**
    * constructor.
    * @param callback callback when received
    * @param host destination host
@@ -74,10 +79,11 @@ public class RcClient {
       channel = AsynchronousSocketChannel.open();
 
       // start service
-      RcSessionManager.startServiceTimeout(RcSession.Owner.CLIENT);
+      manager  = new RcSessionManager(1);
+      manager.startServiceTimeout();
 
       // connect
-      handler = new RcHandlerConnect(callback, readBufferSize);
+      handler = new RcHandlerConnect(callback, readBufferSize, manager);
       RcAttachmentConnect attachmentConnect = new RcAttachmentConnect(channel);
       channel.connect(new InetSocketAddress(host, port), attachmentConnect, handler);
       RcLogger.info(
@@ -97,7 +103,9 @@ public class RcClient {
    */
   public void disconnect() {
     // shutdown service
-    RcSessionManager.shutdownServiceTimeout();
+    if (manager != null) {
+      manager.shutdownServiceTimeout();
+    }
 
     // close
     if (channel != null) {

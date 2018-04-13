@@ -10,7 +10,7 @@ import java.nio.channels.CompletionHandler;
  * @version 0.0.1
  *
  */
-public class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
+class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
 
   /**
    * callback.
@@ -23,6 +23,11 @@ public class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentCon
   private int readBufferSize;
 
   /**
+   * session manager.
+   */
+  private RcSessionManager manager;
+
+  /**
    * read handler.
    */
   private RcHandlerRead handler;
@@ -31,11 +36,13 @@ public class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentCon
    * constructor.
    * @param callback callback when received
    * @param readBufferSize read buffer size
+   * @param manager session manager
    */
-  RcHandlerConnect(RcCallback callback, int readBufferSize) {
+  RcHandlerConnect(RcCallback callback, int readBufferSize, RcSessionManager manager) {
     this.callback = callback;
     this.readBufferSize = readBufferSize;
-    this.handler = new RcHandlerRead(callback, readBufferSize);
+    this.manager = manager;
+    this.handler = new RcHandlerRead(callback, readBufferSize, manager);
   }
 
   @Override
@@ -44,7 +51,7 @@ public class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentCon
     AsynchronousSocketChannel channel = attachmentConnect.getChannel();
 
     // callback
-    RcSession session = RcSessionManager.generate(channel, new RcSession(channel, RcSession.OWner.CLIENT));
+    RcSession session = manager.generate(channel, new RcSession(channel));
     if (session != null) {
       synchronized (session) {
         session.updateTimeout();

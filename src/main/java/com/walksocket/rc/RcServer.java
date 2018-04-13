@@ -47,6 +47,11 @@ public class RcServer {
   private int receiveBufferSize = 1024 * 1024 * 128;
 
   /**
+   * session close check devide number.
+   */
+  private int devide = 10;
+
+  /**
    * pool.
    */
   private ExecutorService pool = Executors.newWorkStealingPool();
@@ -60,6 +65,11 @@ public class RcServer {
    * accept handler.
    */
   private RcHandlerAccept handler;
+
+  /**
+   * session manager.
+   */
+  private RcSessionManager manager;
 
   /**
    * constructor.
@@ -116,6 +126,16 @@ public class RcServer {
   }
 
   /**
+   * set session check devide number.
+   * @param devide session check devide number
+   * @return this
+   */
+  public RcServer devide(int devide) {
+    this.devide = devide;
+    return this;
+  }
+
+  /**
    * set pool.
    * @param pool thread pool
    * @return this
@@ -141,10 +161,11 @@ public class RcServer {
       }
 
       // start service
-      RcSessionManager.startServiceTimeout(RcSession.Owner.SERVER);
+      manager = new RcSessionManager(devide);
+      manager.startServiceTimeout();
 
       // start server
-      handler = new RcHandlerAccept(callback, readBufferSize);
+      handler = new RcHandlerAccept(callback, readBufferSize, manager);
       RcAttachmentAccept attachmentAccept = new RcAttachmentAccept(channel);
       channel.accept(attachmentAccept, handler);
       RcLogger.info(
@@ -167,7 +188,9 @@ public class RcServer {
    */
   public void shutdown() {
     // shutdown service
-    RcSessionManager.shutdownServiceTimeout();
+    if (manager != null) {
+      manager.shutdownServiceTimeout();
+    }
 
     // close
     if (channel != null) {
@@ -180,6 +203,17 @@ public class RcServer {
     if (handler != null) {
       handler.shutdown();
     }
+  }
+
+  /**
+   * get session count.
+   * @return session count.
+   */
+  public long getSessionCount() {
+    if (manager != null) {
+      return manager.getSessionCount();
+    }
+    return 0;
   }
 
   /**

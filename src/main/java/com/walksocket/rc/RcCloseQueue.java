@@ -8,18 +8,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @version 0.0.1
  *
  */
-public class RcCloseQueue {
+class RcCloseQueue {
 
   /**
    * queue.
    */
-  private static ConcurrentLinkedQueue<RcAttachmentRead> queue = new ConcurrentLinkedQueue<>();
+  private ConcurrentLinkedQueue<RcAttachmentRead> queue = new ConcurrentLinkedQueue<>();
 
   /**
    * add.
    * @param attachmentRead attachment for close
    */
-  static void add(RcAttachmentRead attachmentRead) {
+  void add(RcAttachmentRead attachmentRead) {
     queue.add(attachmentRead);
   }
 
@@ -27,7 +27,7 @@ public class RcCloseQueue {
    * poll.
    * @return attachment for close
    */
-  static RcAttachmentRead poll() {
+  RcAttachmentRead poll() {
     return queue.poll();
   }
 }

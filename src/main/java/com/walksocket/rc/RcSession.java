@@ -20,14 +20,6 @@ import java.util.concurrent.TimeoutException;
 public class RcSession {
 
   /**
-   * owner
-   */
-  enum Owner {
-    SEVEAR,
-    CLIENT,
-  };
-
-  /**
    * default send timeout milliseconds.
    */
   private static final int DEFAULT_TIMEOUT_MILLISECONDS = 1500;
@@ -53,9 +45,9 @@ public class RcSession {
   private AsynchronousSocketChannel channel;
 
   /**
-   * owner.
+   * close queue.
    */
-  private Owner owner;
+  private RcCloseQueue queue;
 
   /**
    * close handler called.
@@ -78,19 +70,6 @@ public class RcSession {
   private Map<String, Object> values;
 
   /**
-   * constructor.
-   * @param channel async socket channel
-   * @param owner server or client
-   */
-  RcSession(AsynchronousSocketChannel channel, Owner owner) {
-    this.sid = UUID.randomUUID().toString();
-    this.channel = channel;
-    this.owner = owner;
-    this.localAddress = orNull(channel::getLocalAddress);
-    this.remoteAddress = orNull(channel::getRemoteAddress);
-  }
-
-  /**
    * or null.
    * @param f func
    * @param <T> type
@@ -105,8 +84,23 @@ public class RcSession {
     return null;
   }
 
-  Owner getOwner() {
-    return owner;
+  /**
+   * constructor.
+   * @param channel async socket channel
+   */
+  RcSession(AsynchronousSocketChannel channel) {
+    this.sid = UUID.randomUUID().toString();
+    this.channel = channel;
+    this.localAddress = orNull(channel::getLocalAddress);
+    this.remoteAddress = orNull(channel::getRemoteAddress);
+  }
+
+  /**
+   * set queue.
+   * @param queue close queue
+   */
+  void setQueue(RcCloseQueue queue) {
+    this.queue = queue;
   }
 
   /**
@@ -148,10 +142,12 @@ public class RcSession {
     if (!isOpen()) {
       return;
     }
-    RcAttachmentRead attachmentRead = new RcAttachmentRead(
-        channel,
-        new RcCloseReason(RcCloseReason.Code.SELF_CLOSE));
-    RcCloseQueue.add(attachmentRead);
+    if (queue != null) {
+      RcAttachmentRead attachmentRead = new RcAttachmentRead(
+          channel,
+          new RcCloseReason(RcCloseReason.Code.SELF_CLOSE));
+      queue.add(attachmentRead);
+    }
   }
 
   /**

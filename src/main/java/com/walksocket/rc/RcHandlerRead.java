@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  * @version 0.0.1
  *
  */
-public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
+class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
 
   /**
    * invalid read.
@@ -30,6 +30,11 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
   private int readBufferSize;
 
   /**
+   * session manager.
+   */
+  private RcSessionManager manager;
+
+  /**
    * service close.
    */
   private ExecutorService serviceClose;
@@ -38,10 +43,12 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
    * constructor.
    * @param callback callback when received
    * @param readBufferSize read buffer size
+   * @param manager session manager
    */
-  RcHandlerRead(RcCallback callback, int readBufferSize) {
+  RcHandlerRead(RcCallback callback, int readBufferSize, RcSessionManager manager) {
     this.callback = callback;
     this.readBufferSize = readBufferSize;
+    this.manager = manager;
 
     int num = Runtime.getRuntime().availableProcessors() / 4;
     if (num <= 0) {
@@ -54,7 +61,8 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
       public void run() {
         while (true) {
           RcAttachmentRead attachmentRead = null;
-          if ((attachmentRead = RcCloseQueue.poll()) != null) {
+          if ((attachmentRead = manager.getQueue().poll()) != null) {
+            RcLogger.debug(String.format("close service - attachment:%s", attachmentRead));
             completed(INVALID_READ, attachmentRead);
           }
         }
@@ -81,7 +89,7 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
       if (reason == null || reason.getCode() == RcCloseReason.Code.NONE) {
         reason = new RcCloseReason(RcCloseReason.Code.PEER_CLOSE);
       }
-      RcSession session = RcSessionManager.by(channel);
+      RcSession session = manager.by(channel);
       if (session != null) {
         synchronized (session) {
           if (!session.isCloseHandlerCalled()) {
@@ -94,7 +102,7 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
     }
 
     // callback
-    RcSession session = RcSessionManager.get(channel);
+    RcSession session = manager.get(channel);
     if (session != null) {
       byte[] message = new byte[result];
       buffer.flip();
@@ -125,7 +133,7 @@ public class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRea
     if (reason == null || reason.getCode() == RcCloseReason.Code.NONE) {
       reason = new RcCloseReason(RcCloseReason.Code.FAILED);
     }
-    RcSession session = RcSessionManager.by(channel);
+    RcSession session = manager.by(channel);
     if (session != null) {
       synchronized (session) {
         if (!session.isCloseHandlerCalled()) {

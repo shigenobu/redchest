@@ -19,72 +19,89 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version 0.0.1
  *
  */
-public class RcSessionManager {
+class RcSessionManager {
 
   /**
-   * devide size.
+   * session close check devide number.
    */
-  private static final int SIZE = 10;
+  private int devide;
 
   /**
    * service timeout.
    */
-  private static final ScheduledExecutorService serviceTimeout = Executors.newSingleThreadScheduledExecutor();
+  private final ScheduledExecutorService serviceTimeout = Executors.newSingleThreadScheduledExecutor();
 
   /**
    * service no.
    */
-  private static final AtomicInteger serviceNo = new AtomicInteger(0);
+  private final AtomicInteger serviceNo = new AtomicInteger(0);
 
   /**
    * session locks.
    */
-  private static final List<ReentrantLock> sessionLocks = new ArrayList<>(SIZE);
-
-  static {
-    for (int i = 0; i < SIZE; i++) {
-      sessionLocks.add(new ReentrantLock());
-    }
-  }
+  private final List<ReentrantLock> sessionLocks;
 
   /**
    * sessions.
    */
-  private static final List<ConcurrentHashMap<AsynchronousSocketChannel, RcSession>> sessions = new ArrayList<>(SIZE);
-
-  static {
-    for (int i = 0; i < SIZE; i++) {
-      sessions.add(new ConcurrentHashMap<>());
-    }
-  }
+  private final List<ConcurrentHashMap<AsynchronousSocketChannel, RcSession>> sessions;
 
   /**
    * session count.
    */
-  private static final AtomicLong sessionCount = new AtomicLong(0);
+  private final AtomicLong sessionCount = new AtomicLong(0);
+
+  /**
+   * queue.
+   */
+  private RcCloseQueue queue;
+
+  /**
+   * constructor
+   * @param devide session close check devide number
+   */
+  RcSessionManager(int devide) {
+    this.devide = devide;
+    this.sessionLocks = new ArrayList<>(devide);
+    for (int i = 0; i < devide; i++) {
+      sessionLocks.add(new ReentrantLock());
+    }
+    this.sessions = new ArrayList<>(devide);
+    for (int i = 0; i < devide; i++) {
+      sessions.add(new ConcurrentHashMap<>());
+    }
+    this.queue = new RcCloseQueue();
+  }
+
+  /**
+   * get queue.
+   * @return close queue.
+   */
+  RcCloseQueue getQueue() {
+    return queue;
+  }
 
   /**
    * get mod.
    * @param channel async socket channel.
    * @return mod channel and size
    */
-  private static int getMod(AsynchronousSocketChannel channel) {
+  private int getMod(AsynchronousSocketChannel channel) {
     int random = System.identityHashCode(channel);
-    return Math.abs(random % SIZE);
+    return Math.abs(random % devide);
   }
 
   /**
    * start service timeout.
-   * @param owner client or server
    */
-  static void startServiceTimeout(RcSession.Owner owner) {
+  void startServiceTimeout() {
     serviceTimeout.scheduleAtFixedRate(
         new Runnable() {
 
           @Override
           public void run() {
             int no = serviceNo.getAndIncrement();
-            if (serviceNo.get() >= SIZE) {
+            if (serviceNo.get() >= devide) {
               serviceNo.set(0);
             }
             try {
@@ -94,12 +111,12 @@ public class RcSessionManager {
                 Map.Entry<AsynchronousSocketChannel, RcSession> element = iterator.next();
                 AsynchronousSocketChannel channel = element.getKey();
                 RcSession session = element.getValue();
-                if (session.isTimeout() && session.getOwner() == owner) {
+                if (session.isTimeout()) {
                   RcAttachmentRead attachmentRead
                       = new RcAttachmentRead(
                           channel,
                           new RcCloseReason(RcCloseReason.Code.TIMEOUT));
-                  RcCloseQueue.add(attachmentRead);
+                  queue.add(attachmentRead);
                 }
               }
             } finally {
@@ -112,7 +129,7 @@ public class RcSessionManager {
   /**
    * shutdown service timeout.
    */
-  static void shutdownServiceTimeout() {
+  void shutdownServiceTimeout() {
     if (!serviceTimeout.isShutdown()) {
       serviceTimeout.shutdown();
     }
@@ -124,12 +141,13 @@ public class RcSessionManager {
    * @param session tcp session
    * @return tcp session
    */
-  static RcSession generate(AsynchronousSocketChannel channel, RcSession session) {
+  RcSession generate(AsynchronousSocketChannel channel, RcSession session) {
     int mod = getMod(channel);
     if (!sessions.get(mod).containsKey(channel)) {
       try {
         sessionLocks.get(mod).lock();
         if (sessions.get(mod).putIfAbsent(channel, session) == null) {
+          session.setQueue(queue);
           sessionCount.incrementAndGet();
         }
       } finally {
@@ -144,7 +162,7 @@ public class RcSessionManager {
    * @param channel async socket channel
    * @return tcp session
    */
-  static RcSession get(AsynchronousSocketChannel channel) {
+  RcSession get(AsynchronousSocketChannel channel) {
     int mod = getMod(channel);
     return sessions.get(mod).get(channel);
   }
@@ -154,7 +172,7 @@ public class RcSessionManager {
    * @param channel async socket channel
    * @return tcp session or null
    */
-  static RcSession by(AsynchronousSocketChannel channel) {
+  RcSession by(AsynchronousSocketChannel channel) {
     int mod = getMod(channel);
     RcSession session = null;
     if (sessions.get(mod).containsKey(channel)) {
@@ -174,7 +192,7 @@ public class RcSessionManager {
    * get session count.
    * @return session count
    */
-  public static long getSessionCount() {
+  long getSessionCount() {
     return sessionCount.get();
   }
 }

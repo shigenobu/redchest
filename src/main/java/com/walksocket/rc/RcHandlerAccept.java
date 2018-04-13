@@ -10,7 +10,7 @@ import java.nio.channels.CompletionHandler;
  * @version 0.0.1
  *
  */
-public class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, RcAttachmentAccept> {
+class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, RcAttachmentAccept> {
 
   /**
    * callback.
@@ -23,6 +23,11 @@ public class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChan
   private int readBufferSize;
 
   /**
+   * session manager.
+   */
+  private RcSessionManager manager;
+
+  /**
    * read handler.
    */
   private RcHandlerRead handler;
@@ -31,17 +36,19 @@ public class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChan
    * constructor.
    * @param callback callback when received
    * @param readBufferSize read buffer size
+   * @param manager session manager
    */
-  RcHandlerAccept(RcCallback callback, int readBufferSize) {
+  RcHandlerAccept(RcCallback callback, int readBufferSize, RcSessionManager manager) {
     this.callback = callback;
     this.readBufferSize = readBufferSize;
-    this.handler = new RcHandlerRead(callback, readBufferSize);
+    this.manager = manager;
+    this.handler = new RcHandlerRead(callback, readBufferSize, manager);
   }
 
   @Override
   public void completed(AsynchronousSocketChannel channel, RcAttachmentAccept attachmentAccept) {
     // callback
-    RcSession session = RcSessionManager.generate(channel, new RcSession(channel, RcSession.Owner.SERVER));
+    RcSession session = manager.generate(channel, new RcSession(channel));
     if (session != null) {
       synchronized (session) {
         session.updateTimeout();
