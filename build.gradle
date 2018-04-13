@@ -43,3 +43,7 @@ coveralls {
     sourceDirs = files(sourceSets.main.allSource.srcDirs).files.absolutePath
 }
 
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+}
+
