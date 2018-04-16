@@ -5,6 +5,9 @@ import org.junit.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TestRc {
 
@@ -13,115 +16,22 @@ public class TestRc {
     RcLogger.setVerbose(true);
     RcDate.setAddMilliSeconds(32400000);
 
-//    RcServer server = new RcServer(new RcCallback() {
-//      @Override
-//      public void onOpen(RcSession session) {
-//        // --------------------
-//        // when accepted, once called
-//
-//        // init message counter
-//        session.setValue("cnt", 0);
-//
-//        // send message
-//        String reply = "hello, client!";
-//        try {
-//          session.send(reply.getBytes());
-//        } catch (RcSession.RcSendException e) {
-//          e.printStackTrace();
-//        }
-//      }
-//
-//      @Override
-//      public void onMessage(RcSession session, byte[] message) {
-//        // --------------------
-//        // when messaged, any called
-//
-//        // increment message counter
-//        int cnt = session.getValue("cnt", Integer.class);
-//        session.setValue("cnt", cnt++);
-//
-//        // send message or close session
-//        if (cnt < 3) {
-//          String reply = "hi! I am server !";
-//          try {
-//            session.send(reply.getBytes());
-//          } catch (RcSession.RcSendException e) {
-//            e.printStackTrace();
-//          }
-//        } else {
-//          session.close();
-//        }
-//      }
-//
-//      @Override
-//      public void onClose(RcSession session, RcCloseReason reason) {
-//        // --------------------
-//        // when closed, once called
-//        System.out.println(String.format("close, reason:%s", reason));
-//      }
-//    });
-//    server.start();
-//    // wait for ...
-//    server.shutdown();
-
-//    RcClient client = new RcClient(new RcCallback() {
-//      @Override
-//      public void onOpen(RcSession session) {
-//        // --------------------
-//        // when connected, once called
-//
-//        // init message counter
-//        session.setValue("cnt", 0);
-//
-//        // send message
-//        String reply = "hello, server!";
-//        try {
-//          session.send(reply.getBytes());
-//        } catch (RcSession.RcSendException e) {
-//          e.printStackTrace();
-//        }
-//      }
-//
-//      @Override
-//      public void onMessage(RcSession session, byte[] message) {
-//        // --------------------
-//        // when messaged, any called
-//
-//        // increment message counter
-//        int cnt = session.getValue("cnt", Integer.class);
-//        session.setValue("cnt", cnt++);
-//
-//        // send message or close session
-//        if (cnt < 3) {
-//          String reply = "hi! I am client !";
-//          try {
-//            session.send(reply.getBytes());
-//          } catch (RcSession.RcSendException e) {
-//            e.printStackTrace();
-//          }
-//        } else {
-//          session.close();
-//        }
-//      }
-//
-//      @Override
-//      public void onClose(RcSession session, RcCloseReason reason) {
-//        // --------------------
-//        // when closed, once called
-//        System.out.println(String.format("close, reason:%s", reason));
-//      }
-//    }, "127.0.0.1", 8710);
-//    client.connect();
-//    // wait for ...
-//    client.disconnect();
-
     RcServer server = new RcServer(new SeverCallback());
+    server.backlog(128);
+    server.bind("0.0.0.0", 8710);
+    server.devide(5);
+    server.readBufferSize(256);
+    server.pool(Executors.newFixedThreadPool(2));
+    server.receiveBufferSize(1024 * 1024 * 8);
     server.start();
 
     int size = 5;
     List<RcClient> clients = new ArrayList<>();
     for (int i = 0; i < size; i++) {
-      clients.add(new RcClient(new ClientCallback(), "127.0.0.1", 8710));
+      RcClient client = new RcClient(new ClientCallback(), "127.0.0.1", 8710);
+      client.readBufferSize(256);
+
+      clients.add(client);
       clients.get(i).connect();
     }
 
@@ -130,6 +40,7 @@ public class TestRc {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    RcLogger.debug(String.format("count:%s", server.getSessionCount()));
 
     for (int i = 0; i < clients.size(); i++) {
       clients.get(i).disconnect();
@@ -142,7 +53,7 @@ public class TestRc {
     @Override
     public void onOpen(RcSession session) {
       RcLogger.debug(() -> String.format("server onOpen:%s %s", session.getRemoteAddress(), session));
-//      session.setIdleMilliSeconds(3000);
+      session.setIdleMilliSeconds(10000);
 
       byte[] message = "hello".getBytes(StandardCharsets.UTF_8);
       try {
@@ -188,11 +99,6 @@ public class TestRc {
         byte[] msg = ("hi server " + cnt).getBytes(StandardCharsets.UTF_8);
         try {
           session.send(msg);
-//          try {
-//            Thread.sleep(4000);
-//          } catch (InterruptedException e) {
-//            e.printStackTrace();
-//          }
         } catch (RcSession.RcSendException e) {
           e.printStackTrace();
         }

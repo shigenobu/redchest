@@ -24,6 +24,7 @@ public class TestRcLogger {
   public void testVerbose() {
     RcLogger.setVerbose(true);
     RcLogger.info("test info");
+    RcLogger.debug("test debug");
     RcLogger.debug(() -> "test debug");
 
     try {
