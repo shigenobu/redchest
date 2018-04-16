@@ -34,7 +34,11 @@
         // when messaged, any called
 
         // increment message counter
-        int cnt = session.getValue("cnt", Integer.class);
+        int cnt = 0;
+        Optional<Integer> opt = session.getValue("cnt", Integer.class);
+        if (opt.isPresent()) {
+          cnt = opt.get();
+        }
         session.setValue("cnt", cnt++);
 
         // send message or close session
@@ -87,7 +91,11 @@
         // when messaged, any called
 
         // increment message counter
-        int cnt = session.getValue("cnt", Integer.class);
+        int cnt = 0;
+        Optional<Integer> opt = session.getValue("cnt", Integer.class);
+        if (opt.isPresent()) {
+          cnt = opt.get();
+        }
         session.setValue("cnt", cnt++);
 
         // send message or close session
