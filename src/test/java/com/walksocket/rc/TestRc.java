@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,11 +37,13 @@ public class TestRc {
     }
 
     try {
-      Thread.sleep(3000);
+      for (int i = 0; i < 10; i++) {
+        RcLogger.debug(String.format("count:%s", server.getSessionCount()));
+        Thread.sleep(300);
+      }
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    RcLogger.debug(String.format("count:%s", server.getSessionCount()));
 
     for (int i = 0; i < clients.size(); i++) {
       clients.get(i).disconnect();
@@ -94,7 +97,11 @@ public class TestRc {
     public void onMessage(RcSession session, byte[] message) {
       RcLogger.debug(() -> String.format("client onMessage:%s %s", session, new String(message)));
 
-      int cnt = session.getValue("cnt", Integer.class);
+      int cnt = 0;
+      Optional<Integer> opt = session.getValue("cnt", Integer.class);
+      if (opt.isPresent()) {
+        cnt = opt.get();
+      }
       if (cnt < 3) {
         byte[] msg = ("hi server " + cnt).getBytes(StandardCharsets.UTF_8);
         try {
@@ -111,6 +118,12 @@ public class TestRc {
     @Override
     public void onClose(RcSession session, RcCloseReason reason) {
       RcLogger.debug(() -> String.format("client onClose:%s %s %s", session.getLocalAddress(), session, reason));
+
+      session.clearValue("cnt");
+      Optional<Integer> opt = session.getValue("cnt", Integer.class);
+      if (opt.isPresent()) {
+        RcLogger.error("cnt:" + opt.get());
+      }
     }
   }
 }

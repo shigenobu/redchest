@@ -1,5 +1,6 @@
 package com.walksocket.rc;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -105,7 +106,8 @@ class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
     RcSession session = manager.get(channel);
     if (session != null) {
       byte[] message = new byte[result];
-      buffer.flip();
+      // handling jdk8 with jdk9 build.
+      ((Buffer) buffer).flip();
       buffer.get(message, 0, result);
       synchronized (session) {
         session.updateTimeout();

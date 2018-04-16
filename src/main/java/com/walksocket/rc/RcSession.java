@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -206,13 +207,24 @@ public class RcSession {
    * @param <T> your type
    * @param name your name
    * @param cls your class
-   * @return your value or null
+   * @return optional(your value or null)
    */
-  public <T> T getValue(String name, Class<T> cls) {
+  public <T> Optional getValue(String name, Class<T> cls) {
     if (values == null) {
-      return null;
+      return Optional.empty();
     }
-    return cls.cast(values.get(name));
+    return Optional.ofNullable(cls.cast(values.get(name)));
+  }
+
+  /**
+   * clear value.
+   * @param name your name.
+   */
+  public void clearValue(String name) {
+    if (values == null) {
+      return;
+    }
+    values.remove(name);
   }
 
   /**
