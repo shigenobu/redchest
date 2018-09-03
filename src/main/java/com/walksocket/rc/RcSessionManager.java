@@ -102,28 +102,38 @@ class RcSessionManager {
 
           @Override
           public void run() {
+            // if running shutdown, current connetions are force to close
+            if (RcShutdown.IN_SHUTDOWN.get()) {
+              for (int i = 0; i < devide; i++) {
+                sessionLocks.get(i).lock();
+                sessions.get(i).forEach((channel, session) -> {
+                  RcAttachmentRead attachmentRead
+                      = new RcAttachmentRead(
+                          channel,
+                          new RcCloseReason(RcCloseReason.Code.SHUTDOWN));
+                  queue.add(attachmentRead);
+                });
+                sessionLocks.get(i).unlock();
+              }
+              return;
+            }
+
+            // if session was timeout, connections are force to close
             int no = serviceNo.getAndIncrement();
             if (serviceNo.get() >= devide) {
               serviceNo.set(0);
             }
-            try {
-              sessionLocks.get(no).lock();
-              for (Iterator<Map.Entry<AsynchronousSocketChannel, RcSession>> iterator
-                      = sessions.get(no).entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<AsynchronousSocketChannel, RcSession> element = iterator.next();
-                AsynchronousSocketChannel channel = element.getKey();
-                RcSession session = element.getValue();
-                if (session.isTimeout()) {
-                  RcAttachmentRead attachmentRead
-                      = new RcAttachmentRead(
-                          channel,
-                          new RcCloseReason(RcCloseReason.Code.TIMEOUT));
-                  queue.add(attachmentRead);
-                }
+            sessionLocks.get(no).lock();
+            sessions.get(no).forEach((channel, session) -> {
+              if (session.isTimeout()) {
+                RcAttachmentRead attachmentRead
+                    = new RcAttachmentRead(
+                        channel,
+                        new RcCloseReason(RcCloseReason.Code.TIMEOUT));
+                queue.add(attachmentRead);
               }
-            } finally {
-              sessionLocks.get(no).unlock();
-            }
+            });
+            sessionLocks.get(no).unlock();
           }
         }, start, offset, TimeUnit.MILLISECONDS);
   }
@@ -146,15 +156,12 @@ class RcSessionManager {
   RcSession generate(AsynchronousSocketChannel channel, RcSession session) {
     int mod = getMod(channel);
     if (!sessions.get(mod).containsKey(channel)) {
-      try {
-        sessionLocks.get(mod).lock();
-        if (sessions.get(mod).putIfAbsent(channel, session) == null) {
-          session.setQueue(queue);
-          sessionCount.incrementAndGet();
-        }
-      } finally {
-        sessionLocks.get(mod).unlock();
+      sessionLocks.get(mod).lock();
+      if (sessions.get(mod).putIfAbsent(channel, session) == null) {
+        session.setQueue(queue);
+        sessionCount.incrementAndGet();
       }
+      sessionLocks.get(mod).unlock();
     }
     return sessions.get(mod).get(channel);
   }
@@ -178,14 +185,11 @@ class RcSessionManager {
     int mod = getMod(channel);
     RcSession session = null;
     if (sessions.get(mod).containsKey(channel)) {
-      try {
-        sessionLocks.get(mod).lock();
-        if ((session = sessions.get(mod).remove(channel)) != null) {
-          sessionCount.decrementAndGet();
-        }
-      } finally {
-        sessionLocks.get(mod).unlock();
+      sessionLocks.get(mod).lock();
+      if ((session = sessions.get(mod).remove(channel)) != null) {
+        sessionCount.decrementAndGet();
       }
+      sessionLocks.get(mod).unlock();
     }
     return session;
   }

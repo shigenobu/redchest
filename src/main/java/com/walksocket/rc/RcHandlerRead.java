@@ -56,16 +56,12 @@ class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
       num = 1;
     }
     this.serviceClose = Executors.newFixedThreadPool(num);
-    this.serviceClose.submit(new Runnable() {
-
-      @Override
-      public void run() {
-        while (true) {
-          RcAttachmentRead attachmentRead = null;
-          if ((attachmentRead = manager.getQueue().poll()) != null) {
-            RcLogger.debug(String.format("close service - attachment:%s", attachmentRead));
-            completed(INVALID_READ, attachmentRead);
-          }
+    this.serviceClose.submit(() -> {
+      while (true) {
+        RcAttachmentRead attachmentRead = null;
+        if ((attachmentRead = manager.getQueue().poll()) != null) {
+          RcLogger.debug(String.format("close service - attachment:%s", attachmentRead));
+          completed(INVALID_READ, attachmentRead);
         }
       }
     });

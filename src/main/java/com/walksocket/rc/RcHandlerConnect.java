@@ -1,5 +1,6 @@
 package com.walksocket.rc;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -49,6 +50,16 @@ class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
   public void completed(Void result, RcAttachmentConnect attachmentConnect) {
     // read attachment
     AsynchronousSocketChannel channel = attachmentConnect.getChannel();
+
+    // running shutdown, new connection is abort
+    if (RcShutdown.IN_SHUTDOWN.get()) {
+      try {
+        channel.close();
+      } catch (IOException e) {
+        RcLogger.debug(() -> e);
+      }
+      return;
+    }
 
     // callback
     RcSession session = manager.generate(channel, new RcSession(channel));

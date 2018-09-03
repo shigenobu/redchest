@@ -36,7 +36,12 @@ public class RcCloseReason {
     /**
      * timeout.
      */
-    TIMEOUT;
+    TIMEOUT,
+
+    /**
+     * shutdown.
+     */
+    SHUTDOWN;
   }
 
   /**
