@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * tcp session.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 public class RcSession {
@@ -54,6 +54,11 @@ public class RcSession {
    * close handler called.
    */
   private boolean closeHandlerCalled = false;
+
+  /**
+   * shutdown handler called.
+   */
+  private boolean shutdownHandlerCalled = false;
 
   /**
    * local address.
@@ -172,6 +177,21 @@ public class RcSession {
    */
   void closeHandlerCalled() {
     closeHandlerCalled = true;
+  }
+
+  /**
+   * is shutdown handler called.
+   * @return if already called shutdown handler, true
+   */
+  boolean isShutdownHandlerCalled() {
+    return shutdownHandlerCalled;
+  }
+
+  /**
+   * shutdown handler called.
+   */
+  void shutdownHandlerCalled() {
+    shutdownHandlerCalled = true;
   }
 
   /**

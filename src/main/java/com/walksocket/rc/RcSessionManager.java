@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * session manager.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 class RcSessionManager {
@@ -25,6 +25,11 @@ class RcSessionManager {
    * session close check devide number.
    */
   private int devide;
+
+  /**
+   * shutdown handler.
+   */
+  private RcShutdown shutdown;
 
   /**
    * service timeout.
@@ -59,9 +64,11 @@ class RcSessionManager {
   /**
    * constructor
    * @param devide session close check devide number
+   * @param shutdown shutdown handler
    */
-  RcSessionManager(int devide) {
+  RcSessionManager(int devide, RcShutdown shutdown) {
     this.devide = devide;
+    this.shutdown = shutdown;
     this.sessionLocks = new ArrayList<>(devide);
     for (int i = 0; i < devide; i++) {
       sessionLocks.add(new ReentrantLock());
@@ -103,15 +110,21 @@ class RcSessionManager {
           @Override
           public void run() {
             // if running shutdown, current connetions are force to close
-            if (RcShutdown.IN_SHUTDOWN.get()) {
+            if (shutdown.inShutdown()) {
+              RcLogger.info(String.format("in shutdown, left session count:%s", getSessionCount()));
               for (int i = 0; i < devide; i++) {
                 sessionLocks.get(i).lock();
                 sessions.get(i).forEach((channel, session) -> {
-                  RcAttachmentRead attachmentRead
-                      = new RcAttachmentRead(
-                          channel,
-                          new RcCloseReason(RcCloseReason.Code.SHUTDOWN));
-                  queue.add(attachmentRead);
+                  synchronized (session) {
+                    if (!session.isShutdownHandlerCalled()) {
+                      session.shutdownHandlerCalled();
+                      RcAttachmentRead attachmentRead
+                          = new RcAttachmentRead(
+                              channel,
+                              new RcCloseReason(RcCloseReason.Code.SHUTDOWN));
+                      queue.add(attachmentRead);
+                    }
+                  }
                 });
                 sessionLocks.get(i).unlock();
               }
@@ -125,12 +138,14 @@ class RcSessionManager {
             }
             sessionLocks.get(no).lock();
             sessions.get(no).forEach((channel, session) -> {
-              if (session.isTimeout()) {
-                RcAttachmentRead attachmentRead
-                    = new RcAttachmentRead(
-                        channel,
-                        new RcCloseReason(RcCloseReason.Code.TIMEOUT));
-                queue.add(attachmentRead);
+              synchronized (session) {
+                if (session.isTimeout()) {
+                  RcAttachmentRead attachmentRead
+                      = new RcAttachmentRead(
+                      channel,
+                      new RcCloseReason(RcCloseReason.Code.TIMEOUT));
+                  queue.add(attachmentRead);
+                }
               }
             });
             sessionLocks.get(no).unlock();
@@ -200,5 +215,13 @@ class RcSessionManager {
    */
   long getSessionCount() {
     return sessionCount.get();
+  }
+
+  /**
+   * get shutdown.
+   * @return shutdown handler.
+   */
+  RcShutdown getShutdown() {
+    return shutdown;
   }
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 /**
  * server.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 public class RcServer {
@@ -70,6 +70,11 @@ public class RcServer {
    * session manager.
    */
   private RcSessionManager manager;
+
+  /**
+   * in shutdown, custom executor.
+   */
+  private RcShutdownExecutor executor;
 
   /**
    * constructor.
@@ -146,10 +151,26 @@ public class RcServer {
   }
 
   /**
+   * set shutdown executor.
+   * @param executor custom executor
+   * @return this
+   */
+  public RcServer shutdownExecutor(RcShutdownExecutor executor) {
+    this.executor = executor;
+    return this;
+  }
+
+  /**
    * start.
    * @throws RcServerException server error
    */
   public void start() throws RcServerException {
+    // set shutdown handler
+    RcShutdown shutdown = new RcShutdown(executor);
+    Thread shutdownThread = new Thread(shutdown);
+    Runtime.getRuntime().removeShutdownHook(shutdownThread);
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
+
     try {
       // init
       AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(pool);
@@ -161,7 +182,7 @@ public class RcServer {
       }
 
       // start service
-      manager = new RcSessionManager(devide);
+      manager = new RcSessionManager(devide, shutdown);
       manager.startServiceTimeout();
 
       // start server

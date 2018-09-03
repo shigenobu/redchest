@@ -7,7 +7,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 /**
  * client.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 public class RcClient {
@@ -48,6 +48,11 @@ public class RcClient {
   private RcSessionManager manager;
 
   /**
+   * in shutdown, custom executor.
+   */
+  private RcShutdownExecutor executor;
+
+  /**
    * constructor.
    * @param callback callback when received
    * @param host destination host
@@ -70,16 +75,32 @@ public class RcClient {
   }
 
   /**
+   * set shutdown executor.
+   * @param executor custom executor
+   * @return this
+   */
+  public RcClient shutdownExecutor(RcShutdownExecutor executor) {
+    this.executor = executor;
+    return this;
+  }
+
+  /**
    * connect.
    * @throws RcClientException client error
    */
   public void connect() throws RcClientException {
+    // set shutdown handler
+    RcShutdown shutdown = new RcShutdown(executor);
+    Thread shutdownThread = new Thread(shutdown);
+    Runtime.getRuntime().removeShutdownHook(shutdownThread);
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
+
     try {
       // open
       channel = AsynchronousSocketChannel.open();
 
       // start service
-      manager  = new RcSessionManager(1);
+      manager  = new RcSessionManager(1, shutdown);
       manager.startServiceTimeout();
 
       // connect

@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 /**
  * read handler.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {

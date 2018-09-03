@@ -52,7 +52,7 @@ class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
     AsynchronousSocketChannel channel = attachmentConnect.getChannel();
 
     // running shutdown, new connection is abort
-    if (RcShutdown.IN_SHUTDOWN.get()) {
+    if (manager.getShutdown().inShutdown()) {
       try {
         channel.close();
       } catch (IOException e) {

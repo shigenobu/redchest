@@ -3,7 +3,7 @@ package com.walksocket.rc;
 /**
  * close reason.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 public class RcCloseReason {

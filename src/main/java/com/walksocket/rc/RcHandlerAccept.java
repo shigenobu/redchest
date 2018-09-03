@@ -8,7 +8,7 @@ import java.nio.channels.CompletionHandler;
 /**
  * accept handler.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.3
  *
  */
 class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, RcAttachmentAccept> {
@@ -49,7 +49,7 @@ class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, Rc
   @Override
   public void completed(AsynchronousSocketChannel channel, RcAttachmentAccept attachmentAccept) {
     // if running shutdown, new connection is abort
-    if (RcShutdown.IN_SHUTDOWN.get()) {
+    if (manager.getShutdown().inShutdown()) {
       try {
         channel.close();
       } catch (IOException e) {
