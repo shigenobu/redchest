@@ -11,7 +11,7 @@
     <dependency>
       <groupId>com.walksocket</groupId>
       <artifactId>redchest</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.5</version>
     </dependency>
 
 ## how to use

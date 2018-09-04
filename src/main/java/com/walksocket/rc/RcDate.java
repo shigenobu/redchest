@@ -42,7 +42,7 @@ public class RcDate {
    *   if you want to set locale JP,
    *   call this method with Asia/Tokyo
    * </pre>
-   * @param timeZone
+   * @param timeZone timezone object
    */
   public static void setTimeZone(TimeZone timeZone) {
     RcDate.addMilliSeconds = timeZone.getOffset(System.currentTimeMillis());
