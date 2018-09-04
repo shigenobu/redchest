@@ -1,6 +1,7 @@
 package com.walksocket.rc;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -27,7 +28,7 @@ public class RcDate {
    * set add milli seconds.
    * <pre>
    *   if you want to set locale JP,
-   *   call this method with 32400000(60 * 60 * 9 * 1000)
+   *   call this method with 32400000(60 * 60 * 9 * 1000 = 9 hours)
    * </pre>
    * @param addMilliSeconds milliseconds
    */
@@ -36,12 +37,23 @@ public class RcDate {
   }
 
   /**
+   * set time zone.
+   * <pre>
+   *   if you want to set locale JP,
+   *   call this method with Asia/Tokyo
+   * </pre>
+   * @param timeZone
+   */
+  public static void setTimeZone(TimeZone timeZone) {
+    RcDate.addMilliSeconds = timeZone.getOffset(System.currentTimeMillis());
+  }
+
+  /**
    * get timestamp milliseconds.
    * @return timestamp millis
    */
   static long timestampMilliseconds() {
-    Calendar cal = Calendar.getInstance();
-    return cal.getTimeInMillis();
+    return System.currentTimeMillis();
   }
 
   /**
@@ -64,7 +76,7 @@ public class RcDate {
     SimpleDateFormat sdf = new SimpleDateFormat(format);
     sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
     Date date = new Date();
-    date.setTime(date.getTime() + addMilliSeconds);
+    date.setTime(System.currentTimeMillis() + addMilliSeconds);
     return sdf.format(date);
   }
 }

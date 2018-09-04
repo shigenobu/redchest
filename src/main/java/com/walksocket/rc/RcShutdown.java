@@ -22,10 +22,10 @@ class RcShutdown implements Runnable {
   private RcShutdownExecutor executor;
 
   /**
-   * constructor.
+   * set custom executor.
    * @param executor custom executor.
    */
-  RcShutdown(RcShutdownExecutor executor) {
+  void setExecutor(RcShutdownExecutor executor) {
     this.executor = executor;
   }
 

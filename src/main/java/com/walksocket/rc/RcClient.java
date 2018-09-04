@@ -48,6 +48,16 @@ public class RcClient {
   private RcSessionManager manager;
 
   /**
+   * shutdown handler.
+   */
+  private final RcShutdown shutdown = new RcShutdown();
+
+  /**
+   * shutdown thread.
+   */
+  private final Thread shutdownThread = new Thread(shutdown);
+
+  /**
    * in shutdown, custom executor.
    */
   private RcShutdownExecutor executor;
@@ -90,8 +100,7 @@ public class RcClient {
    */
   public void connect() throws RcClientException {
     // set shutdown handler
-    RcShutdown shutdown = new RcShutdown(executor);
-    Thread shutdownThread = new Thread(shutdown);
+    shutdown.setExecutor(executor);
     Runtime.getRuntime().removeShutdownHook(shutdownThread);
     Runtime.getRuntime().addShutdownHook(shutdownThread);
 
