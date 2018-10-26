@@ -184,11 +184,11 @@ public class RcServer {
       // init
       AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(pool);
       channel = AsynchronousServerSocketChannel.open(group);
+      channel.bind(new InetSocketAddress(host, port), backlog);
       channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
       if (receiveBufferSize > 0) {
         channel.setOption(StandardSocketOptions.SO_RCVBUF, receiveBufferSize);
       }
-      channel.bind(new InetSocketAddress(host, port), backlog);
 
       // start service
       manager = new RcSessionManager(devide, shutdown);
