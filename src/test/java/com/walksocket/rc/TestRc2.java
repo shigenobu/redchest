@@ -17,7 +17,7 @@ public class TestRc2 {
 
     RcServer server = new RcServer(new SeverCallback());
     server.backlog(128);
-    server.bind("0.0.0.0", 8710);
+    server.bind("0.0.0.0", 18711);
     server.devide(5);
     server.readBufferSize(256);
     server.pool(Executors.newFixedThreadPool(2));
@@ -28,7 +28,7 @@ public class TestRc2 {
     int size = 5;
     List<RcClient> clients = new ArrayList<>();
     for (int i = 0; i < size; i++) {
-      RcClient client = new RcClient(new ClientCallback(), "127.0.0.1", 8710);
+      RcClient client = new RcClient(new ClientCallback(), "127.0.0.1", 18711);
       client.readBufferSize(256);
       client.shutdownExecutor(new ClientCutomExecutor(i));
 
