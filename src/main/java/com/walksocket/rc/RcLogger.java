@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 /**
  * logger for stdout.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.6
  *
  */
 public final class RcLogger {
@@ -92,7 +92,9 @@ public final class RcLogger {
         builder.append("(L:" + stack.getLineNumber() + ")");
         builder.append("(M:" + stack.getMethodName() + ")");
       }
+      System.err.println(builder.toString());
+    } else {
+      System.out.println(builder.toString());
     }
-    System.out.println(builder.toString());
   }
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 /**
  * read handler.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.6
  *
  */
 class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
@@ -121,7 +121,8 @@ class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
 
   @Override
   public void failed(Throwable e, RcAttachmentRead attachmentRead) {
-    RcLogger.debug(() -> String.format("read failed - exception:%s, attachment:%s", e, attachmentRead));
+    RcLogger.debug(() -> e);
+    RcLogger.debug(() -> String.format("read failed - attachment:%s", attachmentRead));
 
     // attachment read
     AsynchronousSocketChannel channel = attachmentRead.getChannel();

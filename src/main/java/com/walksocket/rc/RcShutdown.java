@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * shutdown handler.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.6
  *
  */
 class RcShutdown implements Runnable {
@@ -19,14 +19,14 @@ class RcShutdown implements Runnable {
   /**
    * in shutdown, custom executor.
    */
-  private RcShutdownExecutor executor;
+  private RcShutdownExecutor shutdownExecutor;
 
   /**
    * set custom executor.
-   * @param executor custom executor.
+   * @param shutdownExecutor custom executor.
    */
-  void setExecutor(RcShutdownExecutor executor) {
-    this.executor = executor;
+  void setExecutor(RcShutdownExecutor shutdownExecutor) {
+    this.shutdownExecutor = shutdownExecutor;
   }
 
   /**
@@ -51,8 +51,8 @@ class RcShutdown implements Runnable {
     }
 
     // execute
-    if (executor != null) {
-      executor.execute();
+    if (shutdownExecutor != null) {
+      shutdownExecutor.execute();
     }
 
     // end shutdown

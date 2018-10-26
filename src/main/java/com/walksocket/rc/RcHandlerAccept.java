@@ -8,7 +8,7 @@ import java.nio.channels.CompletionHandler;
 /**
  * accept handler.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.6
  *
  */
 class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, RcAttachmentAccept> {
@@ -80,7 +80,8 @@ class RcHandlerAccept implements CompletionHandler<AsynchronousSocketChannel, Rc
 
   @Override
   public void failed(Throwable e, RcAttachmentAccept attachmentAccept) {
-    RcLogger.debug(() -> String.format("accept failed - exception:%s, attachment:%s", e, attachmentAccept));
+    RcLogger.debug(() -> e);
+    RcLogger.debug(() -> String.format("accept failed - attachment:%s", attachmentAccept));
   }
 
   /**

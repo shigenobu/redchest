@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 /**
  * server.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.6
  *
  */
 public class RcServer {
@@ -84,7 +84,7 @@ public class RcServer {
   /**
    * in shutdown, custom executor.
    */
-  private RcShutdownExecutor executor;
+  private RcShutdownExecutor shutdownExecutor;
 
   /**
    * constructor.
@@ -162,11 +162,11 @@ public class RcServer {
 
   /**
    * set shutdown executor.
-   * @param executor custom executor
+   * @param shutdownExecutor custom executor
    * @return this
    */
-  public RcServer shutdownExecutor(RcShutdownExecutor executor) {
-    this.executor = executor;
+  public RcServer shutdownExecutor(RcShutdownExecutor shutdownExecutor) {
+    this.shutdownExecutor = shutdownExecutor;
     return this;
   }
 
@@ -176,7 +176,7 @@ public class RcServer {
    */
   public void start() throws RcServerException {
     // set shutdown handler
-    shutdown.setExecutor(executor);
+    shutdown.setExecutor(shutdownExecutor);
     Runtime.getRuntime().removeShutdownHook(shutdownThread);
     Runtime.getRuntime().addShutdownHook(shutdownThread);
 

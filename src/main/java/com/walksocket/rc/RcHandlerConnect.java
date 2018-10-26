@@ -8,7 +8,7 @@ import java.nio.channels.CompletionHandler;
 /**
  * connect handler.
  * @author shigenobu
- * @version 0.0.1
+ * @version 0.0.6
  *
  */
 class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
@@ -80,7 +80,8 @@ class RcHandlerConnect implements CompletionHandler<Void, RcAttachmentConnect> {
 
   @Override
   public void failed(Throwable e, RcAttachmentConnect attachmentConnect) {
-    RcLogger.debug(() -> String.format("connect failed - exception:%s, attachment:%s", e, attachmentConnect));
+    RcLogger.debug(() -> e);
+    RcLogger.debug(() -> String.format("connect failed - attachment:%s", attachmentConnect));
   }
 
   /**
