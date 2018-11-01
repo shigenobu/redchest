@@ -24,9 +24,6 @@
         // --------------------
         // when accepted, once called
 
-        // init message counter
-        session.setValue("cnt", 0);
-
         // send message
         String reply = "hello, client!";
         try {
@@ -40,6 +37,7 @@
       public void onMessage(RcSession session, byte[] message) {
         // --------------------
         // when messaged, any called
+        System.out.println(String.format("server onMessage:%s (%s)", new String(message), session));
 
         // increment message counter
         int cnt = 0;
@@ -47,11 +45,11 @@
         if (opt.isPresent()) {
           cnt = opt.get();
         }
-        session.setValue("cnt", cnt++);
+        session.setValue("cnt", ++cnt);
 
         // send message or close session
-        if (cnt < 3) {
-          String reply = "hi! I am server !";
+        if (cnt < 5) {
+          String reply = "hi! I am server ! cnt is " + cnt;
           try {
             session.send(reply.getBytes());
           } catch (RcSession.RcSendException e) {
@@ -66,7 +64,7 @@
       public void onClose(RcSession session, RcCloseReason reason) {
         // --------------------
         // when closed, once called
-        System.out.println(String.format("close, reason:%s", reason));
+        System.out.println(String.format("server close, reason:%s", reason));
       }
     });
     server.start();
@@ -81,9 +79,6 @@
         // --------------------
         // when connected, once called
 
-        // init message counter
-        session.setValue("cnt", 0);
-
         // send message
         String reply = "hello, server!";
         try {
@@ -97,6 +92,7 @@
       public void onMessage(RcSession session, byte[] message) {
         // --------------------
         // when messaged, any called
+        System.out.println(String.format("client onMessage:%s (%s)", new String(message), session));
 
         // increment message counter
         int cnt = 0;
@@ -104,11 +100,11 @@
         if (opt.isPresent()) {
           cnt = opt.get();
         }
-        session.setValue("cnt", cnt++);
+        session.setValue("cnt", ++cnt);
 
         // send message or close session
-        if (cnt < 3) {
-          String reply = "hi! I am client !";
+        if (cnt < 5) {
+          String reply = "hi! I am client ! cnt is " + cnt;
           try {
             session.send(reply.getBytes());
           } catch (RcSession.RcSendException e) {
@@ -123,7 +119,7 @@
       public void onClose(RcSession session, RcCloseReason reason) {
         // --------------------
         // when closed, once called
-        System.out.println(String.format("close, reason:%s", reason));
+        System.out.println(String.format("client close, reason:%s", reason));
       }
     }, "127.0.0.1", 8710);
     client.connect();
