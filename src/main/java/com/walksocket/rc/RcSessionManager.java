@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * session manager.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.7
  *
  */
 class RcSessionManager {
@@ -116,7 +116,8 @@ class RcSessionManager {
                 sessionLocks.get(i).lock();
                 sessions.get(i).forEach((channel, session) -> {
                   synchronized (session) {
-                    if (!session.isShutdownHandlerCalled()) {
+                    // if called close by self is false and shutdown handler is not called, true
+                    if (!session.isSelfClosed() && !session.isShutdownHandlerCalled()) {
                       session.shutdownHandlerCalled();
                       RcAttachmentRead attachmentRead
                           = new RcAttachmentRead(
@@ -139,7 +140,8 @@ class RcSessionManager {
             sessionLocks.get(no).lock();
             sessions.get(no).forEach((channel, session) -> {
               synchronized (session) {
-                if (session.isTimeout()) {
+                // if called close by self is false and timeout is true, true
+                if (!session.isSelfClosed() && session.isTimeout()) {
                   RcAttachmentRead attachmentRead
                       = new RcAttachmentRead(
                       channel,
@@ -158,6 +160,24 @@ class RcSessionManager {
    */
   void shutdownServiceTimeout() {
     if (!serviceTimeout.isShutdown()) {
+      RcLogger.info(String.format("in force shutdown, left session count:%s", getSessionCount()));
+      for (int i = 0; i < devide; i++) {
+        sessionLocks.get(i).lock();
+        sessions.get(i).forEach((channel, session) -> {
+          synchronized (session) {
+            // if called close by self is false and shutdown handler is not called, true
+            if (!session.isSelfClosed() && !session.isShutdownHandlerCalled()) {
+              session.shutdownHandlerCalled();
+              RcAttachmentRead attachmentRead
+                  = new RcAttachmentRead(
+                  channel,
+                  new RcCloseReason(RcCloseReason.Code.SHUTDOWN));
+              queue.add(attachmentRead);
+            }
+          }
+        });
+        sessionLocks.get(i).unlock();
+      }
       serviceTimeout.shutdown();
     }
   }

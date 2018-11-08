@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 /**
  * read handler.
  * @author shigenobu
- * @version 0.0.6
+ * @version 0.0.7
  *
  */
 class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
@@ -106,8 +106,11 @@ class RcHandlerRead implements CompletionHandler<Integer, RcAttachmentRead> {
       ((Buffer) buffer).flip();
       buffer.get(message, 0, result);
       synchronized (session) {
-        session.updateTimeout();
-        callback.onMessage(session, message);
+        // if called close by self is false and timeout is false, true
+        if (!session.isSelfClosed() && !session.isTimeout()) {
+          session.updateTimeout();
+          callback.onMessage(session, message);
+        }
       }
     }
 

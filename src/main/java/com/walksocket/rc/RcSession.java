@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * tcp session.
  * @author shigenobu
- * @version 0.0.3
+ * @version 0.0.7
  *
  */
 public class RcSession {
@@ -59,6 +59,11 @@ public class RcSession {
    * shutdown handler called.
    */
   private boolean shutdownHandlerCalled = false;
+
+  /**
+   * if close method called, true.
+   */
+  private boolean selfClosed = false;
 
   /**
    * local address.
@@ -148,6 +153,11 @@ public class RcSession {
     if (!isOpen()) {
       return;
     }
+
+    // self closed is set to true
+    selfClosed = true;
+
+    // direct into queue
     if (queue != null) {
       RcAttachmentRead attachmentRead = new RcAttachmentRead(
           channel,
@@ -161,7 +171,10 @@ public class RcSession {
    * @return if channel is open and close handler called false, true
    */
   public boolean isOpen() {
-    return channel.isOpen() && !closeHandlerCalled;
+    return channel.isOpen()
+        && !closeHandlerCalled
+        && !shutdownHandlerCalled
+        && !selfClosed;
   }
 
   /**
@@ -192,6 +205,14 @@ public class RcSession {
    */
   void shutdownHandlerCalled() {
     shutdownHandlerCalled = true;
+  }
+
+  /**
+   * self close method called.
+   * @return if close method called, true.
+   */
+  boolean isSelfClosed() {
+    return selfClosed;
   }
 
   /**

@@ -129,7 +129,7 @@ public class TestRc {
 
   @Test
   public void testSample() throws RcServer.RcServerException, RcClient.RcClientException, InterruptedException {
-
+    RcLogger.setVerbose(true);
     RcServer server = new RcServer(new RcCallback() {
       @Override
       public void onOpen(RcSession session) {
@@ -158,6 +158,7 @@ public class TestRc {
           cnt = opt.get();
         }
         session.setValue("cnt", ++cnt);
+        System.out.println("server cnt:" + cnt);
 
         // send message or close session
         if (cnt < 5) {
@@ -169,6 +170,13 @@ public class TestRc {
           }
         } else {
           session.close();
+
+          String reply = "hi! I am server ! cnt is " + ++cnt;
+          try {
+            session.send(reply.getBytes());
+          } catch (RcSession.RcSendException e) {
+            e.printStackTrace();
+          }
         }
       }
 
@@ -209,6 +217,7 @@ public class TestRc {
           cnt = opt.get();
         }
         session.setValue("cnt", ++cnt);
+        System.out.println("client cnt:" + cnt);
 
         // send message or close session
         if (cnt < 5) {
@@ -219,7 +228,7 @@ public class TestRc {
             e.printStackTrace();
           }
         } else {
-          session.close();
+//          session.close();
         }
       }
 
