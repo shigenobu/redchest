@@ -1,5 +1,5 @@
 group 'com.walksocket'
-version '0.0.8'
+version '0.0.9'
 description 'Java NIO2 Tcp wrapper for server & client.'
 
 apply plugin: 'java'
