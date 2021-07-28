@@ -1,5 +1,5 @@
 group 'com.walksocket'
-version '0.0.9'
+version '0.1.0'
 description 'Java NIO2 Tcp wrapper for server & client.'
 
 apply plugin: 'java'
@@ -22,7 +22,7 @@ dependencies {
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.6"
+    toolVersion = "0.8.7"
 }
 
 jacocoTestReport {
@@ -38,7 +38,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.3'
     }
 }
 
