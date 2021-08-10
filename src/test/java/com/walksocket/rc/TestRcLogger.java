@@ -1,10 +1,6 @@
 package com.walksocket.rc;
 
-import static org.junit.Assert.*;
-
-import java.io.UnsupportedEncodingException;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestRcLogger {
 
