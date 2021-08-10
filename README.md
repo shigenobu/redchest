@@ -3,6 +3,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.walksocket/redchest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.walksocket/redchest)
 [![Javadoc](https://javadoc-badge.appspot.com/com.walksocket/redchest.svg?label=javadoc)](https://javadoc-badge.appspot.com/com.walksocket/redchest)
 [![Java CI](https://github.com/shigenobu/redchest/actions/workflows/ci.yaml/badge.svg?branch=develop)](https://github.com/shigenobu/redchest/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/shigenobu/redchest/branch/develop/graph/badge.svg?token=1TI9A2PVW0)](https://codecov.io/gh/shigenobu/redchest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## maven
