@@ -9,7 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      java: ['8', '11']
+      matrix:
+        java: ['8', '11']
+    name: Java ${{ matrix.java }} test
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
