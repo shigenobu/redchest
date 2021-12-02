@@ -81,6 +81,11 @@ public class RcSession {
   private Map<String, Object> values;
 
   /**
+   * newest.
+   */
+  private boolean newest = true;
+
+  /**
    * or null.
    * @param f func
    * @param <T> type
@@ -282,6 +287,7 @@ public class RcSession {
    */
   public void setIdleMilliSeconds(int idleMilliSeconds) {
     this.idleMilliSeconds = idleMilliSeconds;
+    updateTimeout();
   }
 
   /**
@@ -289,13 +295,14 @@ public class RcSession {
    * @return if timeout, true
    */
   boolean isTimeout() {
-    return RcDate.timestampMilliseconds() > lifeTimestampMilliseconds;
+    return !newest && RcDate.timestampMilliseconds() > lifeTimestampMilliseconds;
   }
 
   /**
    * update timeout.
    */
   void updateTimeout() {
+    newest = false;
     lifeTimestampMilliseconds = RcDate.timestampMilliseconds() + idleMilliSeconds;
   }
 

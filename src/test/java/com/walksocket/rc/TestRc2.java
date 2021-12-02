@@ -97,7 +97,7 @@ public class TestRc2 {
       if (opt.isPresent()) {
         cnt = opt.get();
       }
-      if (cnt < 3) {
+      if (cnt < 100) {
         byte[] msg = ("hi server " + cnt).getBytes(StandardCharsets.UTF_8);
         try {
           session.send(msg);
